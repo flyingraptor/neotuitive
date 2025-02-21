@@ -12,7 +12,7 @@ pip install neotuitive
 
 - Fetch and store NEO data from ESA's risk list (https://neo.ssa.esa.int/risk-list) using their API (https://neo.ssa.esa.int/computer-access)
 - Visualize NEO orbits in 2D and 3D
-- Gives intuition about the size of the NEOs and their potential impact on Earth
+- Intuitions about NEO which are in the risk list and their potential impact on Earth
 
 ## Quick Start
 
