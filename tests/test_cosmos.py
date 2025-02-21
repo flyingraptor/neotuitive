@@ -2,12 +2,12 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock
 
-from cosmos import (
+from neotuitive.cosmos import (
     NearEarthObject, _SpaceObject, InvalidDiameterError, 
     InvalidVelocityError, InvalidProbabilityError
 )
-from impact import PossibleImpact
-from orbit import OrbitProperties
+from neotuitive.impact import PossibleImpact
+from neotuitive.orbit import OrbitProperties
 
 class TestSpaceObject(unittest.TestCase):
     def test_initialization(self):

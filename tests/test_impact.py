@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-from impact import PossibleImpact, InvalidProbabilityError
+from neotuitive.impact import PossibleImpact, InvalidProbabilityError
 
 class TestPossibleImpact(unittest.TestCase):
     def setUp(self):

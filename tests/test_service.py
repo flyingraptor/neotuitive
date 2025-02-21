@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from db.repository import NeoRiskListDB, RiskyNEO, NEOOrbit, NEOPotentialImpact
-from service import Neo, NeoNotFoundError, DatabaseOperationError
+from neotuitive.db.repository import NeoRiskListDB, RiskyNEO, NEOOrbit, NEOPotentialImpact
+from neotuitive.service import Neo, NeoNotFoundError, DatabaseOperationError
 
 class TestNeoService(unittest.TestCase):
     def setUp(self):

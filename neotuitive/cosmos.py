@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from impact import PossibleImpact
-from orbit import OrbitProperties
+from .impact import PossibleImpact
+from .orbit import OrbitProperties
 
 class NearEarthObjectError(Exception):
     """Base exception for errors related to NearEarthObject."""

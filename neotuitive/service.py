@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from cosmos import NearEarthObject
-from db.repository import DatabaseOperationError, NeoRiskListDB
-from impact import PossibleImpact
-from orbit import OrbitProperties
+from .cosmos import NearEarthObject
+from .db.repository import DatabaseOperationError, NeoRiskListDB
+from .impact import PossibleImpact
+from .orbit import OrbitProperties
 
 class NeoServiceError(Exception):
     """Base exception for Neo service errors."""

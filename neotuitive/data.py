@@ -4,8 +4,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from typing import List
 
-from db.repository import NeoRiskListDB, RiskyNEO, NEOOrbit, NEOPotentialImpact
-from api.handler import NeoRiskListAPI, NeoRiskListAPIError
+from .db.repository import NeoRiskListDB, RiskyNEO, NEOOrbit, NEOPotentialImpact
+from .api.handler import NeoRiskListAPI, NeoRiskListAPIError
 
 
 class DataLoaderError(Exception):

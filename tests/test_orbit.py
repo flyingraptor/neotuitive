@@ -1,5 +1,5 @@
 import unittest
-from orbit import OrbitProperties, InvalidValueError
+from neotuitive.orbit import OrbitProperties, InvalidValueError
 
 class TestOrbitProperties(unittest.TestCase):
     def setUp(self):
