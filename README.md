@@ -17,11 +17,11 @@ pip install neotuitive
 ## Quick Start
 
 ```python
-from api.handler import NeoRiskListAPI
-from db.repository import NeoRiskListDB
-from data import DataLoader
-from service import Neo
-from visual import Show
+from neotuitive.api.handler import NeoRiskListAPI
+from neotuitive.db.repository import NeoRiskListDB
+from neotuitive.data import DataLoader
+from neotuitive.service import Neo
+from neotuitive.visual import Show
 from datetime import datetime, timedelta
 
 if __name__ == "__main__":
