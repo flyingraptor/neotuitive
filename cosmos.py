@@ -111,9 +111,9 @@ class NearEarthObject(_SpaceObject):
     def ip_max(self, ip_max: float):
         """Set the maximum impact probability."""
         if not isinstance(ip_max, (float, int)):
-            raise TypeError("Impact probability must be a number.")
+            raise TypeError(f"Impact probability {ip_max} must be a number.")
         if not (0 <= ip_max <= 1):
-            raise InvalidProbabilityError("Impact probability must be between 0 and 1 (0% - 100%).")
+            raise InvalidProbabilityError(f"Impact probability {ip_max} must be between 0 and 1 (0% - 100%).")
         self._ip_max = ip_max
         return self
 
