@@ -13,8 +13,8 @@ from poliastro.plotting import OrbitPlotter3D
 from poliastro.plotting.static import StaticOrbitPlotter
 import plotly.graph_objects as go
 
-from service import Neo
-from utils import compute_neo_position, create_orbit
+from .service import Neo
+from .utils import compute_neo_position, create_orbit
 
 class NeoVisualizationError(Exception):
     """Custom exception for NEO visualization errors."""
