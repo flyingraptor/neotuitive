@@ -82,14 +82,11 @@ class Neo:
         """
         Search NEOs by partial name match with pagination.
         
-        Args:
-            unique_name: First letters of the NEO unique name
-            page: Page number (1-based indexing)
-            page_size: Number of items per page
-        Returns:
-            List of NearEarthObject instances matching the search criteria
-        Raises:
-            DatabaseOperationError: If database operation fails
+        :param unique_name: First letters of the NEO unique name
+        :param page: Page number (1-based indexing)
+        :param page_size: Number of items per page
+        :return: List of NearEarthObject instances matching the search criteria
+        :raises DatabaseOperationError: If database operation fails
         """
         try:
             neo_records = self.db.search_neos(unique_name, page, page_size)
@@ -101,11 +98,9 @@ class Neo:
         """
         Build a NearEarthObject instance from a RiskyNEO record.
         
-        Args:
-            neo_record: RiskyNEO database record
-            
-        Returns:
-            Fully populated NearEarthObject instance
+        :param neo_record: RiskyNEO database record
+        :return: Fully populated NearEarthObject instance
+        :raises DatabaseOperationError: If database operation fails
         """
         # Get orbit and impact data
         orbit_data = self.db.get_orbit_by_neo_unique_name(neo_record.unique_name)

@@ -11,8 +11,7 @@ class Terminal:
         """
         Initialize Terminal with optional Neo service.
         
-        Args:
-            neo_service: Neo service instance, if None creates a new one
+        :param neo_service: Neo service instance, if None creates a new one
         """
         if neo_service is None:
             db = NeoRiskListDB()
@@ -23,10 +22,9 @@ class Terminal:
         """
         Search for NEOs by name and print results to terminal.
         
-        Args:
-            search_term: Search term for NEO name
-            page: Page number (default: 1)
-            page_size: Results per page (default: 10)
+        :param search_term: Search term for NEO name
+        :param page: Page number (default: 1)
+        :param page_size: Results per page (default: 10)
         """
         try:
             neos = self.neo_service.search(search_term, page, page_size)
