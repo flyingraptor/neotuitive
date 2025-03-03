@@ -31,67 +31,19 @@ class Neo:
         """
         Retrieves and constructs a NearEarthObject with all its parts.
         
-        :param unique_name: The unique identifier of the NEO.
-        :return: A fully composed NearEarthObject.
-        :raises NeoNotFoundError: If the NEO is not found in the database.
-        :raises DatabaseOperationError: If there is a failure in database operations.
+        Args:
+            unique_name: The unique identifier of the NEO.
+        Returns:
+            A fully composed NearEarthObject.
+        Raises:
+            NeoNotFoundError: If the NEO is not found in the database.
+            DatabaseOperationError: If there is a failure in database operations.
         """
         try:
-            # Fetch the main NEO record
             neo_record = self.db.get_neo_by_unique_name(unique_name)
             if not neo_record:
                 raise NeoNotFoundError(f"NEO with unique name '{unique_name}' not found.")
-
-            # Fetch orbit properties
-            orbit_data = self.db.get_orbit_by_neo_unique_name(unique_name)
-            orbit_properties = None
-            if orbit_data:
-                orbit_properties = OrbitProperties()
-                orbit_properties.epoch = orbit_data.epoch_mjd
-                orbit_properties.semimajor_axis = orbit_data.semi_major_axis_a
-                orbit_properties.eccentricity = orbit_data.eccentricity_e
-                orbit_properties.inclination = orbit_data.inclination_i
-                orbit_properties.longitude_of_ascending_node = orbit_data.long_of_ascending_node
-                orbit_properties.argument_of_perihelion = orbit_data.argument_of_perihelion
-                orbit_properties.mean_anomaly = orbit_data.mean_anomaly
-                orbit_properties.perihelion_distance = orbit_data.perihelion_distance
-                orbit_properties.aphelion_distance = orbit_data.aphelion_distance
-                orbit_properties.asc_node_earth_sep = orbit_data.asc_node_earth_sep
-                orbit_properties.desc_node_earth_sep = orbit_data.desc_node_earth_sep
-                orbit_properties.moid = orbit_data.moid
-                orbit_properties.orbital_period = orbit_data.orbital_period
-                orbit_properties.u_parameter = orbit_data.u_parameter
-                orbit_properties.orbit_type = orbit_data.orbit_type
-
-            # Fetch potential impacts
-            impact_records = self.db.get_potential_impacts_by_neo_unique_name(unique_name)
-            possible_impacts = [
-                PossibleImpact(
-                    impact.impact_date_time_utc,
-                    impact.ip,
-                    impact.expected_energy_mt
-                ) for impact in impact_records
-            ] if impact_records else []
-
-            # Construct the NearEarthObject
-            neo = NearEarthObject(
-                name=neo_record.unique_name,
-                max_probability_impact_date=neo_record.impact_date_time_utc,
-                orbit_properties=orbit_properties,
-                possible_impacts=possible_impacts
-            )
-            
-            # Populate additional attributes
-            neo.diameter = neo_record.diameter_m
-            neo.ip_max = neo_record.ip_max
-            neo.ps_max = neo_record.ps_max
-            neo.ts = neo_record.ts
-            neo.velocity = neo_record.velocity_km_s
-            neo.ip_cum = neo_record.ip_cum
-            neo.ps_cum = neo_record.ps_cum
-            
-            return neo
-
+            return self._build_neo_from_record(neo_record)
         except DatabaseOperationError as e:
             raise DatabaseOperationError(f"Failed to retrieve NEO '{unique_name}': {e}") from e
 
@@ -125,3 +77,79 @@ class Neo:
             return [self.from_name(name) for name in unique_names]
         except DatabaseOperationError as e:
             raise DatabaseOperationError(f"Failed to retrieve NEOs by potential impact dates: {e}") from e
+
+    def search(self, unique_name: str, page: int = 1, page_size: int = 10) -> list[NearEarthObject]:
+        """
+        Search NEOs by partial name match with pagination.
+        
+        :param unique_name: First letters of the NEO unique name
+        :param page: Page number (1-based indexing)
+        :param page_size: Number of items per page
+        :return: List of NearEarthObject instances matching the search criteria
+        :raises DatabaseOperationError: If database operation fails
+        """
+        try:
+            neo_records = self.db.search_neos(unique_name, page, page_size)
+            return [self._build_neo_from_record(record) for record in neo_records]
+        except DatabaseOperationError as e:
+            raise DatabaseOperationError(f"Failed to search NEOs: {str(e)}")
+
+    def _build_neo_from_record(self, neo_record) -> NearEarthObject:
+        """
+        Build a NearEarthObject instance from a RiskyNEO record.
+        
+        :param neo_record: RiskyNEO database record
+        :return: Fully populated NearEarthObject instance
+        :raises DatabaseOperationError: If database operation fails
+        """
+        # Get orbit and impact data
+        orbit_data = self.db.get_orbit_by_neo_unique_name(neo_record.unique_name)
+        impact_records = self.db.get_potential_impacts_by_neo_unique_name(neo_record.unique_name)
+        
+        # Create orbit properties if available
+        orbit_properties = None
+        if orbit_data:
+            orbit_properties = OrbitProperties()
+            orbit_properties.epoch = orbit_data.epoch_mjd
+            orbit_properties.semimajor_axis = orbit_data.semi_major_axis_a
+            orbit_properties.eccentricity = orbit_data.eccentricity_e
+            orbit_properties.inclination = orbit_data.inclination_i
+            orbit_properties.longitude_of_ascending_node = orbit_data.long_of_ascending_node
+            orbit_properties.argument_of_perihelion = orbit_data.argument_of_perihelion
+            orbit_properties.mean_anomaly = orbit_data.mean_anomaly
+            orbit_properties.perihelion_distance = orbit_data.perihelion_distance
+            orbit_properties.aphelion_distance = orbit_data.aphelion_distance
+            orbit_properties.asc_node_earth_sep = orbit_data.asc_node_earth_sep
+            orbit_properties.desc_node_earth_sep = orbit_data.desc_node_earth_sep
+            orbit_properties.moid = orbit_data.moid
+            orbit_properties.orbital_period = orbit_data.orbital_period
+            orbit_properties.u_parameter = orbit_data.u_parameter
+            orbit_properties.orbit_type = orbit_data.orbit_type
+
+        # Create possible impacts if available
+        possible_impacts = [
+            PossibleImpact(
+                datetime_utc=impact.impact_date_time_utc,
+                probability=impact.ip,
+                expected_energy_in_mt=impact.expected_energy_mt
+            ) for impact in impact_records
+        ] if impact_records else []
+
+        # Create and populate NearEarthObject instance
+        neo = NearEarthObject(
+            name=neo_record.unique_name,
+            max_probability_impact_date=neo_record.impact_date_time_utc,
+            orbit_properties=orbit_properties,
+            possible_impacts=possible_impacts
+        )
+        
+        # Set additional properties
+        neo.diameter = neo_record.diameter_m
+        neo.velocity = neo_record.velocity_km_s
+        neo.ip_max = neo_record.ip_max
+        neo.ps_max = neo_record.ps_max
+        neo.ts = neo_record.ts
+        neo.ip_cum = neo_record.ip_cum
+        neo.ps_cum = neo_record.ps_cum
+        
+        return neo

@@ -543,6 +543,45 @@ class NeoRiskListDB:
         finally:
             # Close the connection
             self._close_connection()
+            
+    def search_neos(self, unique_name: str, page: int = 1, page_size: int = 10) -> list[RiskyNEO]:
+        """
+        Search NEOs by partial name match (prefix) with pagination.
+        
+        Args:
+            unique_name: First letters of the NEO unique name
+            page: Page number (1-based indexing)
+            page_size: Number of items per page
+            
+        Returns:
+            List of RiskyNEO objects matching the search criteria
+            
+        Raises:
+            DatabaseOperationError: If database operation fails
+        """
+        try:
+            offset = (page - 1) * page_size
+            
+             # Connect to db
+            self.conn = sqlite3.connect(
+                self.db_name, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
+            self.cursor = self.conn.cursor()
+            
+            self.cursor.execute("""
+                SELECT * FROM risky_neo 
+                WHERE unique_name LIKE ? || '%'
+                ORDER BY unique_name
+                LIMIT ? OFFSET ?
+            """, (unique_name, page_size, offset))
+            
+            rows = self.cursor.fetchall()
+            return [RiskyNEO(*row) for row in rows]
+            
+        except sqlite3.Error as e:
+            raise DatabaseOperationError(f"Failed to search NEOs: {str(e)}")
+        finally:
+            # Close the connection
+            self._close_connection()
 
     def has_data(self) -> bool:
         """
