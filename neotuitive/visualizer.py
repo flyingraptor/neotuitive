@@ -25,52 +25,6 @@ class Show:
         """Initialize with a Neo service instance."""
         self.neo_service = neo_service
 
-    def _get_random_neos(self, number: int, date: datetime.datetime = None) -> tuple[list, Time]:
-        """
-        Get random NEOs and epoch for visualization.
-        
-        :param number: Number of NEOs to select
-        :param date: Date for epoch calculation (default: current date)
-        :return: Tuple of (selected NEOs list, epoch)
-        :raises NeoVisualizationError: If no NEO data is available
-        """
-        date = date or datetime.datetime.now()
-        epoch = Time(date, scale="tdb")  # TDB scale for JPL data
-        
-        # Fetch all NEOs
-        neo_objs = self.neo_service.all()
-        if not neo_objs:
-            raise NeoVisualizationError("No NEO data available.")
-
-        # Randomly select a subset of NEOs
-        neo_sample = random.sample(neo_objs, min(number, len(neo_objs)))
-        
-        return neo_sample, epoch
-
-    def _compute_positions(self, neos: list, epoch: Time) -> list:
-        """
-        Compute NEO positions using multiprocessing.
-        
-        :param neos: List of NEOs to process
-        :param epoch: Time epoch for position calculation
-        :return: List of valid position results
-        :raises NeoVisualizationError: If no valid positions computed
-        """
-        # Compute positions using multiprocessing
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            results = pool.starmap(
-                compute_neo_position, 
-                [(neo, epoch) for neo in neos]
-            )
-
-        # Filter out invalid results
-        valid_positions = [res for res in results if res is not None]
-        
-        if not valid_positions:
-            raise NeoVisualizationError("No valid NEO positions computed.")
-            
-        return valid_positions
-
     def random(self, number: int):
         """
         Plot random Near-Earth Objects (NEOs) at the current date in 2D.
@@ -350,3 +304,49 @@ class Show:
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
         plt.show()
+        
+    def _get_random_neos(self, number: int, date: datetime.datetime = None) -> tuple[list, Time]:
+        """
+        Get random NEOs and epoch for visualization.
+        
+        :param number: Number of NEOs to select
+        :param date: Date for epoch calculation (default: current date)
+        :return: Tuple of (selected NEOs list, epoch)
+        :raises NeoVisualizationError: If no NEO data is available
+        """
+        date = date or datetime.datetime.now()
+        epoch = Time(date, scale="tdb")  # TDB scale for JPL data
+        
+        # Fetch all NEOs
+        neo_objs = self.neo_service.all()
+        if not neo_objs:
+            raise NeoVisualizationError("No NEO data available.")
+
+        # Randomly select a subset of NEOs
+        neo_sample = random.sample(neo_objs, min(number, len(neo_objs)))
+        
+        return neo_sample, epoch
+
+    def _compute_positions(self, neos: list, epoch: Time) -> list:
+        """
+        Compute NEO positions using multiprocessing.
+        
+        :param neos: List of NEOs to process
+        :param epoch: Time epoch for position calculation
+        :return: List of valid position results
+        :raises NeoVisualizationError: If no valid positions computed
+        """
+        # Compute positions using multiprocessing
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+            results = pool.starmap(
+                compute_neo_position, 
+                [(neo, epoch) for neo in neos]
+            )
+
+        # Filter out invalid results
+        valid_positions = [res for res in results if res is not None]
+        
+        if not valid_positions:
+            raise NeoVisualizationError("No valid NEO positions computed.")
+            
+        return valid_positions
