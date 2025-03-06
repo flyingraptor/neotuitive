@@ -12,6 +12,7 @@ from poliastro.frames import Planes
 from poliastro.plotting import OrbitPlotter3D
 from poliastro.plotting.static import StaticOrbitPlotter
 import plotly.graph_objects as go
+from concurrent.futures import ProcessPoolExecutor
 
 from .service import Neo
 from .utils import compute_neo_position, create_orbit
@@ -24,6 +25,52 @@ class Show:
         """Initialize with a Neo service instance."""
         self.neo_service = neo_service
 
+    def _get_random_neos(self, number: int, date: datetime.datetime = None) -> tuple[list, Time]:
+        """
+        Get random NEOs and epoch for visualization.
+        
+        :param number: Number of NEOs to select
+        :param date: Date for epoch calculation (default: current date)
+        :return: Tuple of (selected NEOs list, epoch)
+        :raises NeoVisualizationError: If no NEO data is available
+        """
+        date = date or datetime.datetime.now()
+        epoch = Time(date, scale="tdb")  # TDB scale for JPL data
+        
+        # Fetch all NEOs
+        neo_objs = self.neo_service.all()
+        if not neo_objs:
+            raise NeoVisualizationError("No NEO data available.")
+
+        # Randomly select a subset of NEOs
+        neo_sample = random.sample(neo_objs, min(number, len(neo_objs)))
+        
+        return neo_sample, epoch
+
+    def _compute_positions(self, neos: list, epoch: Time) -> list:
+        """
+        Compute NEO positions using multiprocessing.
+        
+        :param neos: List of NEOs to process
+        :param epoch: Time epoch for position calculation
+        :return: List of valid position results
+        :raises NeoVisualizationError: If no valid positions computed
+        """
+        # Compute positions using multiprocessing
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+            results = pool.starmap(
+                compute_neo_position, 
+                [(neo, epoch) for neo in neos]
+            )
+
+        # Filter out invalid results
+        valid_positions = [res for res in results if res is not None]
+        
+        if not valid_positions:
+            raise NeoVisualizationError("No valid NEO positions computed.")
+            
+        return valid_positions
+
     def random(self, number: int):
         """
         Plot random Near-Earth Objects (NEOs) at the current date in 2D.
@@ -31,43 +78,19 @@ class Show:
         :param number: The number of random NEOs to plot.
         """
         try:
-            date = datetime.datetime.now()
-            epoch = Time(date, scale="tdb")  # TDB scale for JPL data
+            neo_sample, epoch = self._get_random_neos(number)
+            positions = self._compute_positions(neo_sample, epoch)
             
-            # Fetch all NEOs
-            neo_objs = self.neo_service.all()
-            if not neo_objs:
-                raise NeoVisualizationError("No NEO data available.")
-
-            # Randomly select a subset of NEOs
-            neo_sample = random.sample(neo_objs, min(number, len(neo_objs)))
-
             # Initialize Matplotlib figure
             _, ax = plt.subplots()
-            title = f"{number} NEOs on {date.strftime('%Y-%m-%d')}"
+            title = f"{number} NEOs on {epoch.datetime.strftime('%Y-%m-%d')}"
             ax.set_title(title)
             ax.set_facecolor("black")
             ax.set_xlim(-2e+8, 2e+8)
             ax.set_ylim(-2e+8, 2e+8)
             plotter = StaticOrbitPlotter(ax=ax, plane=Planes.EARTH_ECLIPTIC)
 
-            # Compute positions using multiprocessing
-            with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-                results = pool.starmap(
-                    compute_neo_position, 
-                    [(neo, epoch) for neo in neo_sample]
-                )
-
-            # Filter out invalid results
-            results = [
-                res 
-                for res in results 
-                if res is not None
-            ]
-            if not results:
-                raise NeoVisualizationError("No valid NEO positions computed.")
-
-            x_positions, y_positions, _ = zip(*results)
+            x_positions, y_positions, _ = zip(*positions)
             ax.scatter(x_positions, y_positions, s=0.8, c="white", marker=".")
 
             # Plot Earth's orbit
@@ -88,30 +111,8 @@ class Show:
         :param number: The number of random NEOs to plot.
         """
         try:
-            date = datetime.datetime.now()
-            epoch = Time(date, scale="tdb")
-
-            # Fetch all NEOs
-            neo_objs = self.neo_service.all()
-            if not neo_objs:
-                raise NeoVisualizationError("No NEO data available.")
-
-            # Randomly select a subset of NEOs
-            neo_sample = random.sample(neo_objs, min(number, len(neo_objs)))
-
-            # Compute NEO positions
-            neo_positions = [
-                compute_neo_position(neo, epoch) 
-                for neo in neo_sample
-            ]
-            neo_positions = [
-                pos 
-                for pos in neo_positions 
-                if pos is not None
-            ]
-
-            if not neo_positions:
-                raise NeoVisualizationError("No valid NEO positions computed.")
+            neo_sample, epoch = self._get_random_neos(number)
+            neo_positions = self._compute_positions(neo_sample, epoch)
 
             x_neo, y_neo, z_neo = zip(*neo_positions)
 
@@ -247,7 +248,7 @@ class Show:
     def orbit_2D(
         self,
         neo_name: str, 
-        date: datetime, 
+        date: datetime = datetime.datetime.now(), 
         fixed_view_limits: bool = False
     ):
         """
@@ -284,7 +285,7 @@ class Show:
     def orbit_3D(
         self,
         neo_name: str, 
-        date: datetime
+        date: datetime = datetime.datetime.now()
     ):
         """
         Show the 3D orbit of a Near-Earth Object (NEO) using Poliastro.

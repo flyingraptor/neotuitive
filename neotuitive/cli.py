@@ -4,12 +4,12 @@ import argparse
 from .service import Neo
 from .db.repository import NeoRiskListDB
 
-class Terminal:
+class Command:
     """Handles command-line interface operations."""
     
     def __init__(self, neo_service: Optional[Neo] = None):
         """
-        Initialize Terminal with optional Neo service.
+        Initialize Command with optional Neo service.
         
         :param neo_service: Neo service instance, if None creates a new one
         """
@@ -58,8 +58,8 @@ def main():
     
     args = parser.parse_args()
     
-    terminal = Terminal()
-    terminal.search_neo(args.search, args.page, args.size)
+    command = Command()
+    command.search_neo(args.search, args.page, args.size)
 
 
 if __name__ == "__main__":
