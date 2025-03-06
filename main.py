@@ -1,3 +1,4 @@
+from datetime import datetime
 from neotuitive.api.handler import NeoRiskListAPI
 from neotuitive.db.repository import NeoRiskListDB
 from neotuitive.data import DataLoader
@@ -13,9 +14,10 @@ if __name__ == "__main__":
     # Load data if needed - Stores them in sqlite database
     loader.initialize_storage()
 
-    # Create service and visualization instancew
+    # Create service and visualization instance
     neo_service = Neo(db)
     show = Show(neo_service)
 
-    # Example - Show 10000 NEOs
-    show.random3d(10000)
+    # Show all possible impacts for the year 2025
+    show.random(10000)
+
