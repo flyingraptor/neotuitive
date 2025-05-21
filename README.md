@@ -44,6 +44,8 @@ if __name__ == "__main__":
         show.orbit_3D(neo.name, datetime.now())
 ```
 
+![3D Orbit Visualization](img/example.png)
+
 ## Command Line Interface
 
 Search for NEOs directly from the command line:
@@ -54,13 +56,19 @@ python -m neotuitive.cli 2024
 
 # Get page 2 with 20 results per page
 python -m neotuitive.cli 2024 --page 2 --size 20
-```
 
-The CLI output shows key information for each NEO:
-- Name
-- Diameter (meters)
-- Velocity (km/s)
-- Impact Probability
-- Palermo Scale
-- Torino Scale
+------------------------------------
+Name: 2024GY5
+Diameter: 10.0 meters
+Velocity: 19.3 km/s
+Impact Probability (max): 0.000001
+Palermo Scale (max): -7.57
+Torino Scale: 0.0
 
+------------------------------------
+Name: 2024GZ5
+Diameter: 3.0 meters
+Velocity: 11.8 km/s
+Impact Probability (max): 0.000233
+Palermo Scale (max): -6.52
+Torino Scale: 0.0
