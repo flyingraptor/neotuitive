@@ -51,9 +51,6 @@ if __name__ == "__main__":
 Search for NEOs directly from the command line:
 
 ```bash
-# Search for NEOs with names starting with "2024"
-python -m neotuitive.cli 2024
-
 # Get page 2 with 20 results per page
 python -m neotuitive.cli 2024 --page 2 --size 20
 
