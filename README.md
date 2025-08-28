@@ -2,12 +2,6 @@
 
 A Python library for visualizing and analyzing Near-Earth Objects (NEOs) risk list, using data from ESA's Near-Earth Object Coordination Centre.
 
-## Installation
-
-```bash
-pip install neotuitive
-```
-
 ## Features
 
 - Fetch and store NEO data from ESA's risk list (https://neo.ssa.esa.int/risk-list) using their API (https://neo.ssa.esa.int/computer-access)
